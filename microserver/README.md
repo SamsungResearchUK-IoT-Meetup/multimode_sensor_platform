@@ -98,6 +98,6 @@ Connected on IP: 192.168.110.227
 On your browser go to the IP address: http://192.168.110.227:8000/status
 You should see output similar to the following on your browser:
 
-
+![status page sceen shot](https://github.com/SamsungResearchUK-IoT-Meetup/multimode_sensor_platform/blob/master/assets/screenshots/microwebServeStatusPage.png)
 
 
