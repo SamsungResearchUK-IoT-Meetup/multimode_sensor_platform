@@ -1,11 +1,10 @@
-m# WiFi Manager
+## WiFi Manager
 The WiFi Manager is fully documented in the project WiKi. 
 You can read the WiFi page Wiki [here](https://github.com/SamsungResearchUK-IoT-Meetup/projects/wiki/WiFi)
 
-This document is here just to allow developers to quickly test this module in isolation. It forms a wrapper around the micropythonn
-[network](http://docs.micropython.org/en/latest/library/network.html), [micropython schedule](http://docs.micropython.org/en/latest/library/micropython.html) and [pyb](http://docs.micropython.org/en/latest/library/pyb.html) library. It's used to monitor a WiFi connection and attempt to reconnect if WiFi fails.
-It will also retry when it initially connects to a new WiFi connection a default of 3 times - which is configurable. The WiFi manager also has a number of state
-variables and attributes mentioned later.
+This document is here just to allow developers to quickly test this module in isolation. It forms a wrapper around the micropython
+[network](http://docs.micropython.org/en/latest/library/network.html), [micropython schedule](http://docs.micropython.org/en/latest/library/micropython.html) and [pyb](http://docs.micropython.org/en/latest/library/pyb.html) library. It's used to monitor a WiFi connection and attempt to reconnect, if WiFi fails.
+It will also retry when it initially connects to a new WiFi connection a default of 3 times - which is configurable. The WiFi manager also has a number of state variables and attributes mentioned later.
 
 ## PYB Library
 The PYB Library is used to control timers on the microcontroller. This is configured to test a connection every 10 seconds. The timer object is stored in the
