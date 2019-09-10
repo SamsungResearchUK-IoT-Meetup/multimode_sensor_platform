@@ -98,7 +98,7 @@ def _httpHandlerStatustGet(httpClient, httpResponse):
 # ===( Create A WiFi Connection and Start Web Server )========================
 # ============================================================================
 
-status = myWifi.connect('Samsung-test', 'test1234')                  # TODO pull the password and SSID from an encrypted file on FLASH
+status = myWifi.connect('WiFi-SSID', 'WiFi-Password')                  # TODO pull the password and SSID from an encrypted file on FLASH
 
 if status[0]:
     print('We have a WiFi connection. Bringing up web server')
