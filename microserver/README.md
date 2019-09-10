@@ -100,4 +100,22 @@ You should see output similar to the following on your browser:
 
 ![status page sceen shot](https://github.com/SamsungResearchUK-IoT-Meetup/multimode_sensor_platform/blob/master/assets/screenshots/microwebServeStatusPage.png)
 
+## 4. Stopping The Web Server
+You can easily stop the web server by calling the **Stop** method. 
+To do this from the REPL:
+
+```bash
+   >>> from start import srv
+   >>> srv.Stop()
+```
+
+## 5. Stopping The WiFi Manager
+You will notice that the WiFi manager is still monitoring your WiFi connection. This can be annoying, to stop it monitoring you can ask it to disconnect:
+
+```bash
+   >>> from start import myWifi
+   >>> myWifi.disconnect()
+   (True, 'Wifi connection disconnected')
+   >>> Wifi Manager has stopped monitoring the connection 
+```
 
