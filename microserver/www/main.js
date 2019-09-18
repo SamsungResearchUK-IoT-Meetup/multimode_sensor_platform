@@ -10,7 +10,7 @@ if (navigator.serviceWorker) {
     console.log('SW Registered');
 
   }).catch(function (error){
-    console.log('Service Worker registratio error');
+    console.log('Service Worker registration error');
     console.log(error);
   });
 
