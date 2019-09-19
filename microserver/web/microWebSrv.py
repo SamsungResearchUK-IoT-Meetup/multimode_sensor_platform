@@ -379,7 +379,7 @@ class MicroWebSrv :
         # ------------------------------------------------------------------------
 
         def __init__(self, microWebSrv, socket, addr):
-            socket.settimeout(2)
+            socket.settimeout(4)
             self._microWebSrv   = microWebSrv
             self._socket        = socket
             self._addr          = addr
@@ -740,7 +740,7 @@ class MicroWebSrv :
              http version, method response and size of the content.
              It then sends the content over a socket interface.
 
-            :param HTTP code (e.g. 200, 404, etc...)
+            :param HTTP code (e.g. 200, 404, etc...);
             :param headers:
             :param contentType: (e.g. text/html)
             :param contentCharset:  (e.g. UTF-9)

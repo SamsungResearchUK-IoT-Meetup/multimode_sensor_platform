@@ -85,10 +85,19 @@ class HDC_Sensor:
         return humidity_percentage
 
     def is_ready(self):
-        if not (self.i2c_peripheral.readfrom_mem(self.i2c_addr, self._register_address_set, 1)[0]):
-            return True
-        else:
-            return False
+        try:
+            if not (self.i2c_peripheral.readfrom_mem(self.i2c_addr, self._register_address_set, 1)[0]):
+                return True
+            else:
+                return False
+        except OSError as error:
+            print("The I2C bus is not responding to the I2C device address of: {}".format(self.i2c_addr))
+            print("Error value: {}".format(error))
+        except:
+            # TODO put logging into this
+            print("An unexpected error occurred while attempting to read a temperature value")
+            raise
+        return False
 
     def _measure(self):
         """
