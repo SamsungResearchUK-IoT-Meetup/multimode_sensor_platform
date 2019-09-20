@@ -1,15 +1,33 @@
 
 body {
-  padding: 1rem;
-  font-family: 'Lato', sans-serif;;
+ background-color: white; 
+ font-family: Verdana, sans-serif; 
+ font-size: 150%;
+ }
+h1 {
+ font-size: 200%; 
+ color: navy; 
+ text-align: center;
+ }
+h2 {
+ font-size: 150%; 
+ color: red; 
+ text-align: center;
+ }
+p,ul,li,td {
+ color: black; 
+ }
+a:link {
+ color: red;
+ text-decoration: underline;
+ }
+a:visited {
+ color: gray;
+ }
+a:hover {
+ color: red;
+ text-decoration: none;
 }
-
-a {
-  color: #2D91F8;
-  padding: 0.25rem 0.5rem;
-  text-decoration: none;
-}
-
-img {
-  max-width: 100%;
+a:active, a:focus {
+ color: red;
 }
