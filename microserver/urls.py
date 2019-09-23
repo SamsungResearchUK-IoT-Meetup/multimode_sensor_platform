@@ -39,8 +39,11 @@ from drivers.hdc2080_sensor import HDC_Sensor
 # ================( Create Sensor Objects)====================================
 # ============================================================================
 
-pir = PIR(pir_pin_id='X1')                   # Create Sensor which uses the 'X1' pin to detect movement
-pir.start()                                  # Start the PIR sensor
+machine.Pin.board.EN_3V3.value(1)                  # Enable the I2C bus on boards with new firmware. This is a change made on the new boards to enable I2C
+                                                   # See forum post: https://forum.micropython.org/viewtopic.php?f=20&t=6803&p=39680#p38661
+
+pir = PIR(pir_pin_id='X1')                         # Create Sensor which uses the 'X1' pin to detect movement
+pir.start()                                        # Start the PIR sensor
 
 microRadar = MicrowaveRadar(mr_pin_id='X2')        # Create Sensor which uses the 'X1' pin to detect movement
 microRadar.start()                                 # Start the PIR sensor
