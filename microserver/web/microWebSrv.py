@@ -11,6 +11,16 @@ import  socket
 import  gc
 import  re
 
+from libraries.logging.logging import *
+
+basicConfig(level=DEBUG)                 # Can be one of NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL
+log = getLogger("microWebSrv")
+
+# try:
+#     1/0
+# except Exception as e:
+#     log.exc(e, "Problem with 1/0. Expected: (%s)", "infinity")
+
 try :
     from microWebTemplate import MicroWebTemplate
 except :
@@ -87,7 +97,7 @@ class MicroWebSrv :
 
     @classmethod
     def route(cls, url, method='GET'):
-        """ Adds a route handler function to the routing list """
+        """Adds a route handler function to the routing list. """
         def route_decorator(func):
             item = (url, method, func)
             cls._docoratedRouteHandlers.append(item)
@@ -98,12 +108,17 @@ class MicroWebSrv :
 
     @staticmethod
     def HTMLEscape(s) :
+        """Removes characters that are parsed as HTML and replaces them with HTML control characters.
+
+        For example the string: '<p>hello world</p>' gets changed to: '&lt;p&gt;hello world&lt;/p&gt;'
+        It's used to clean text strings that can be passed into HTML forms."""
         return ''.join(MicroWebSrv._html_escape_chars.get(c, c) for c in s)
 
     # ----------------------------------------------------------------------------
 
     @staticmethod
     def _startThread(func, args=()):
+        log.debug("New thread started for Function: %s and with arguments: %s", func, args)
         try :
             start_new_thread(func, args)
         except :
@@ -141,6 +156,17 @@ class MicroWebSrv :
 
     @staticmethod
     def _fileExists(path):
+        """A private helper method to find out if a directory path exists.
+        It returns 'True' if the directory exists in the current path.
+        It returns 'False' if the directory does not exist in the current path.
+
+        :param path:
+        :return: Boolean
+        Example: If the directory '/www' exists then:
+            myWebSrv._fileExists("www") Returns: 'True'
+            myWebSrv._fileExists("WWW") Returns: 'True'
+            myWebSrv._fileExists("nothing_here") Returns: 'False'.
+        """
         try :
             stat(path)
             return True
@@ -151,6 +177,13 @@ class MicroWebSrv :
 
     @staticmethod
     def _isPyHTMLFile(filename):
+        """
+        A simple helper method which returns true if a file name ends in 'pyhtml'.
+        :param filename:
+        :return: Boolean
+
+        Example: myServer._isPyHTMLFile('myFileName.pyhtml') Returns: 'True'
+        """
         return filename.lower().endswith(MicroWebSrv._pyhtmlPagesExt)
 
     # ============================================================================
@@ -200,14 +233,16 @@ class MicroWebSrv :
 
     def _serverProcess(self):
         self._started = True
+        log.debug("Server Process is now started. About to accept SOCKET incoming connections")
         while True :
             try :
-                client, cliAddr = self._server.accept()
+                client, cliAddr = self._server.accept()         # Blocking on socket.accept()
+                log.info("Accepted 'client': %s and 'client address': %s", client, cliAddr)
             except Exception as ex :
                 if ex.args and ex.args[0] == 113 :
                     break
                 continue
-            self._client(self, client, cliAddr)
+            self._client(self, client, cliAddr)                 # Calling _client to process request.
         self._started = False
 
     # ============================================================================
@@ -215,6 +250,16 @@ class MicroWebSrv :
     # ============================================================================
 
     def Start(self, threaded=False):
+        """
+        The main method to start the web server. Takes a single parameter 'threaded' which is defaulted to 'False'.
+        If threaded is false the method will use the private _serverProcess which is an endless while loop blocking on
+        the socket.accept() method.
+        If threaded is true the method will pass the private -serverProcess into the _startThread process to use the
+        threading module. This allows the use of the repl when running the server.
+
+        :param threaded:
+        :return:
+        """
         if not self._started :
             self._server = socket.socket()
             self._server.setsockopt( socket.SOL_SOCKET,
@@ -246,6 +291,14 @@ class MicroWebSrv :
     # ----------------------------------------------------------------------------
 
     def GetMimeTypeFromFilename(self, filename):
+        """
+        Searches self._mimeTypes to verify that this mimeType is supported. If this mime type is supported the method responds with
+        the mime type e.g. 'text'.
+        If it's not supported 'None' is returned.
+
+        :param filename:
+        :return: mimeType | None
+        """
         filename = filename.lower()
         for ext in self._mimeTypes :
             if filename.endswith(ext) :
@@ -255,6 +308,17 @@ class MicroWebSrv :
     # ----------------------------------------------------------------------------
     
     def GetRouteHandler(self, resUrl, method):
+        """
+        The method will take a HTTP method(POST,PUT, DELETE, GET) and URL path. It removes '/' at the end of a URL path. It then iterates around
+        the routehandlers that are configured upon creation (e.g. /test, /status, /myPath etc..) and checks to see if there is a handler for the
+        given resUrl.
+        If there is a match, the function that is attached to that route (e.g. path=/mypath: func=myURLfunction) will be passed back to the caller.
+        This is used
+
+        :param resUrl:
+        :param method:
+        :return: route handler function && args | None && None
+        """
         if self._routeHandlers :
             #resUrl = resUrl.upper()
             if resUrl.endswith('/') :
@@ -281,6 +345,16 @@ class MicroWebSrv :
     # ----------------------------------------------------------------------------
 
     def _physPathFromURLPath(self, urlPath):
+        """
+        A private helper method to translate a URL path for a file resource to a physical path on the device.
+        If a request is made for www.server.com/ i.e. default page which normally serves up index.html the method will search
+        self._indexPages on your embedded system, and if the first file that exists will be returned as the physical file to serve.
+        If it is for an actual file e.g. www.server.com/my.pdf then the path is returned if the file exists on the server.
+        If no file exists then 'None' is returned
+
+        :param urlPath:
+        :return: None | pysPath
+        """
         if urlPath == '/' :
             for idxPage in self._indexPages :
             	physPath = self._webPath + '/' + idxPage
@@ -297,11 +371,15 @@ class MicroWebSrv :
     # ============================================================================
 
     class _client :
+        """
+        The main embedded class that handles requests from a client (browser).
+
+        """
 
         # ------------------------------------------------------------------------
 
         def __init__(self, microWebSrv, socket, addr):
-            socket.settimeout(2)
+            socket.settimeout(4)
             self._microWebSrv   = microWebSrv
             self._socket        = socket
             self._addr          = addr
@@ -325,20 +403,25 @@ class MicroWebSrv :
         # ------------------------------------------------------------------------
 
         def _processRequest(self):
+            """
+            This private method of embedded class '_client' is responsible for processing HTTP requests from the client.
+
+            :return:
+            """
             try :
-                response = MicroWebSrv._response(self)
+                response = MicroWebSrv._response(self)              # create a response object template which is empty at this point.
                 if self._parseFirstLine(response) :
                     if self._parseHeader(response) :
-                        upg = self._getConnUpgrade()
+                        upg = self._getConnUpgrade()                # check to see if we can upgrade to web sockets.
                         if not upg :
                             routeHandler, routeArgs = self._microWebSrv.GetRouteHandler(self._resPath, self._method)
-                            if routeHandler :
+                            if routeHandler :                       # If we have a route handler function for this URL patth then use it to handle the response.
                                 if routeArgs is not None:
                                     routeHandler(self, response, routeArgs)
                                 else:
                                     routeHandler(self, response)
-                            elif self._method.upper() == "GET" :
-                                filepath = self._microWebSrv._physPathFromURLPath(self._resPath)
+                            elif self._method.upper() == "GET" :    # We only allow default GET requests to the server if not handled explicitly
+                                filepath = self._microWebSrv._physPathFromURLPath(self._resPath)        # Get a file path if it is valid and exists
                                 if filepath :
                                     if MicroWebSrv._isPyHTMLFile(filepath) :
                                         response.WriteResponsePyHTMLFile(filepath)
@@ -386,13 +469,29 @@ class MicroWebSrv :
         # ------------------------------------------------------------------------
 
         def _parseFirstLine(self, response):
+            """
+            The simple helper method parses the first line received from the client e.g. "Get /mypath/myfolder/file?parm=2 HTTP/1.1"
+            It then extracts the HTTP method (GET,PUT,POST,DELETE) the path requested /mypath/myfolder/file and querry
+            parameters parm =2.
+            Values are stored in object variables:
+                _method
+                _path
+                _httpVer
+                _queryParams
+
+             Returns 'True' if successful.
+
+            :param response:
+            :return: Boolean
+            """
             try :
-                elements = self._socketfile.readline().decode().strip().split()
+                elements = self._socketfile.readline().decode().strip().split()     # Parsing HTTP line e.g. ['GET', '/', 'HTTP/1.1']
                 if len(elements) == 3 :
                     self._method  = elements[0].upper()
                     self._path    = elements[1]
                     self._httpVer = elements[2].upper()
-                    elements      = self._path.split('?', 1)
+                    elements      = self._path.split('?', 1)                        # Split querry parms e.g. /mypath/path/end?for=2
+                    log.info("Processing request HTTP Method: %s Path: %s Version: %s", self._method, self._path, self._httpVer)
                     if len(elements) > 0 :
                         self._resPath = MicroWebSrv._unquote_plus(elements[0])
                         if len(elements) > 1 :
@@ -411,6 +510,28 @@ class MicroWebSrv :
         # ------------------------------------------------------------------------
 
         def _parseHeader(self, response):
+            """
+            Takes a HTTP header and populates the dictionary item self._headers from the incoming request. It does this by
+            doing a socket.readline(). The HTTP header is put in the dictionary e.g.
+
+            {'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Mobile Safari/537.36',
+            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+            'upgrade-insecure-requests': '1',
+            'cookie': 'cookielaw_accepted=1',
+            'cache-control': 'no-cache',
+            'connection': 'keep-alive',
+            'pragma': 'no-cache',
+            'accept-encoding': 'gzip, deflate, br',
+            'sec-fetch-mode': 'navigate',
+            'sec-fetch-site': 'none',
+            'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',
+            'sec-fetch-user': '?1',
+            'host': 'localhost:8001'}
+
+            :param response:
+            :return: Boolean
+
+            """
             while True :
                 elements = self._socketfile.readline().decode().strip().split(':', 1)
                 if len(elements) == 2 :
@@ -609,6 +730,23 @@ class MicroWebSrv :
         # ------------------------------------------------------------------------
 
         def WriteResponse(self, code, headers, contentType, contentCharset, content):
+            """
+            The main method to create a HTTP response object. It takes parameters:
+             - HTTP code (e.g. 200, 404, etc...);
+             - headers;
+             - content type (e.g. text/html);
+             - character set (e.g. UTF-9); and
+             content and constructs a HTTP response object. It first sends a header over a socket interface responsible for sending reason code,
+             http version, method response and size of the content.
+             It then sends the content over a socket interface.
+
+            :param HTTP code (e.g. 200, 404, etc...);
+            :param headers:
+            :param contentType: (e.g. text/html)
+            :param contentCharset:  (e.g. UTF-9)
+            :param content:
+            :return: Boolean
+            """
             try :
                 if content :
                     if type(content) == str :
@@ -616,11 +754,13 @@ class MicroWebSrv :
                     contentLength = len(content)
                 else :
                     contentLength = 0
+                log.debug("Server writing response via route handler. Response code: %d Content Length: %d", code, contentLength)
                 self._writeBeforeContent(code, headers, contentType, contentCharset, contentLength)
                 if content :
                     self._write(content)
                 return True
-            except :
+            except Exception as e:
+                log.exc(e, "Problem sending response via route handler. Response code (%d) Content Length: (%d)", code, contentLength)
                 return False
 
         # ------------------------------------------------------------------------
@@ -647,21 +787,37 @@ class MicroWebSrv :
         # ------------------------------------------------------------------------
 
         def WriteResponseFile(self, filepath, contentType=None, headers=None):
+            """
+            A method to write a file to the client. It takes the path of the file, calculates it's size and copies the file in chunk
+            sizes of 1024 octets via the low level socket interface. The method first builds the first line of the HTTP request and
+            provides headers, content type, reason code and size of the file. It then does the sending of the file in 1024 octet chunks
+            to the client.
+            If there is a failure in reading the file a WriteREsponseNotFound is sent.
+            If there is a faulure in sending the file to the client a WriteResponseInternalServerError is sent.
+
+            :param filepath:    (e.g. www/style.css)
+            :param contentType: (e.g. text/html)
+            :param headers:     (e.g. {'Cache-Control': 'max-age=315360000', 'Last-Modified': 'Fri, 1 Jan 2018 23:42:00 GMT'})
+            :return: Boolean
+            """
             try :
                 size = stat(filepath)[6]
+                log.debug("Server writing file: %s of size: %s of type: %s to host: %s", filepath, size, contentType, self._client._addr)
                 if size > 0 :
-                    with open(filepath, 'rb') as file :
-                        self._writeBeforeContent(200, headers, contentType, None, size)
+                    with open(filepath, 'rb') as file :                                 # Open file for reading in binary mode
+                        self._writeBeforeContent(200, headers, contentType, None, size) # Write our HTTP header
                         try :
                             buf = bytearray(1024)
                             while size > 0 :
                                 x = file.readinto(buf)
                                 if x < len(buf) :
                                     buf = memoryview(buf)[:x]
-                                self._write(buf)
+                                    log.debug("Last: %d octets being sent", x)
+                                self._write(buf)                                        # call up low level socket write function
                                 size -= x
                             return True
-                        except :
+                        except Exception as e:
+                            log.exc(e, "Problem sending file: (%s) of size: (%d)", filepath, size)
                             self.WriteResponseInternalServerError()
                             return False
             except :
@@ -734,6 +890,7 @@ class MicroWebSrv :
         # ------------------------------------------------------------------------
 
         def WriteResponseNotFound(self):
+            log.warning("A resource was requested but not found. Server responded with a HTTP 404")
             if self._client._microWebSrv._notFoundUrl :
                 self.WriteResponseRedirect(self._client._microWebSrv._notFoundUrl)
             else :
@@ -747,6 +904,7 @@ class MicroWebSrv :
         # ------------------------------------------------------------------------
 
         def WriteResponseInternalServerError(self):
+            log.error("An internal server error happened. Server responded with a HTTP 500")
             return self.WriteResponseError(500)
 
         # ------------------------------------------------------------------------

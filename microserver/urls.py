@@ -23,9 +23,12 @@ __version__ = '0.1.0'
 __author__ = 'Nicholas Herriot'
 __license__ = "MIT"
 
+import machine
 from web.microWebSrv import MicroWebSrv                # Import the WiFi microweb server object to allow us to run a mini web server on the board
 from drivers.sr_501_sensor import PIR
-from  drivers.rcwl_0516_sensor import MicrowaveRadar
+from drivers.rcwl_0516_sensor import MicrowaveRadar
+from drivers.hdc2080_sensor import HDC_Sensor
+
 # ----------------------------------------------------------------------------
 
 
@@ -36,12 +39,17 @@ from  drivers.rcwl_0516_sensor import MicrowaveRadar
 # ================( Create Sensor Objects)====================================
 # ============================================================================
 
-p1 = PIR(pir_pin_id='X1')                   # Create Sensor which uses the 'X1' pin to detect movement
-p1.start()                                  # Start the PIR sensor
+machine.Pin.board.EN_3V3.value(1)                  # Enable the I2C bus on boards with new firmware. This is a change made on the new boards to enable I2C
+                                                   # See forum post: https://forum.micropython.org/viewtopic.php?f=20&t=6803&p=39680#p38661
 
-mr1 = MicrowaveRadar(mr_pin_id='X2')        # Create Sensor which uses the 'X1' pin to detect movement
-mr1.start()                                 # Start the PIR sensor
+pir = PIR(pir_pin_id='X1')                         # Create Sensor which uses the 'X1' pin to detect movement
+pir.start()                                        # Start the PIR sensor
 
+microRadar = MicrowaveRadar(mr_pin_id='X2')        # Create Sensor which uses the 'X1' pin to detect movement
+microRadar.start()                                 # Start the PIR sensor
+
+i2c = machine.I2C('X')                      # Create our I2C object to talk to I2C devices
+humidityTemperature = HDC_Sensor(i2c)    # Create our humidity and temperature sensor see: https://pybd.io/hw/tile_sensa.html
 
 # ============================================================================
 # ===( Define URL Path for pages)=============================================
@@ -100,7 +108,7 @@ def _httpHandlerTestGet(httpClient, httpResponse):
             <br />
         </body>
     </html>
-	""" % (p1.pir_total(), mr1.mr_total(), "N/A", "N/A", "N/A", "N/A",)
+	""" % (pir.pir_total(), microRadar.mr_total(), humidityTemperature.temperature(), humidityTemperature.humidity(), "N/A", "N/A",)
     httpResponse.WriteResponseOk(headers	= None,
                                   contentType	= "text/html",contentCharset = "UTF-8",
                                   content 		 = content)
