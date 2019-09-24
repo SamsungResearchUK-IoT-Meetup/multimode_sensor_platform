@@ -23,12 +23,12 @@ __version__ = '0.1.0'
 __author__ = 'Nicholas Herriot'
 __license__ = "MIT"
 
-import machine
+import machine, time
 from web.microWebSrv import MicroWebSrv                # Import the WiFi microweb server object to allow us to run a mini web server on the board
 from drivers.sr_501_sensor import PIR
 from drivers.rcwl_0516_sensor import MicrowaveRadar
 from drivers.hdc2080_sensor import HDC_Sensor
-
+from drivers.opt3001_sensor import OPT_Sensor
 # ----------------------------------------------------------------------------
 
 
@@ -48,8 +48,9 @@ pir.start()                                        # Start the PIR sensor
 microRadar = MicrowaveRadar(mr_pin_id='X2')        # Create Sensor which uses the 'X1' pin to detect movement
 microRadar.start()                                 # Start the PIR sensor
 
-i2c = machine.I2C('X')                      # Create our I2C object to talk to I2C devices
-humidityTemperature = HDC_Sensor(i2c)    # Create our humidity and temperature sensor see: https://pybd.io/hw/tile_sensa.html
+i2c = machine.I2C('X')                             # Create our I2C object to talk to I2C devices
+humidityTemperature = HDC_Sensor(i2c)              # Create our humidity and temperature sensor see: https://pybd.io/hw/tile_sensa.html
+lightLevel = OPT_Sensor(i2c)                       # Create our lux level sensor see: https://pybd.io/hw/tile_sensa.html
 
 # ============================================================================
 # ===( Define URL Path for pages)=============================================
@@ -85,6 +86,17 @@ def _httpHandlerTestGet(httpClient, httpResponse):
 
 @MicroWebSrv.route('/sensors')
 def _httpHandlerTestGet(httpClient, httpResponse):
+
+    temperature = humidityTemperature.temperature()
+    humidity =  humidityTemperature.humidity()
+    lux = lightLevel.lux()
+    current_time = time.localtime()[:-2]
+
+    print("** Current temperature: {}".format(temperature))
+    print("** Current humidity: {}".format(humidity))
+    print("** Current lux: {}".format(lux))
+    print("** Current time: {}".format(current_time))
+
     content = """\
 	<!DOCTYPE html>
 	<html lang=en>
@@ -94,6 +106,8 @@ def _httpHandlerTestGet(httpClient, httpResponse):
         </head>
         <body>
             <h1>Sensors Page</h1>
+            Current Time: %s
+            <br />
             PIR Sensor:  %s
             <br />
             Doppler Radar: %s
@@ -108,7 +122,7 @@ def _httpHandlerTestGet(httpClient, httpResponse):
             <br />
         </body>
     </html>
-	""" % (pir.pir_total(), microRadar.mr_total(), humidityTemperature.temperature(), humidityTemperature.humidity(), "N/A", "N/A",)
+	""" % (current_time, pir.pir_total(), microRadar.mr_total(), humidityTemperature.temperature(), humidityTemperature.humidity(), lightLevel.lux(), "N/A",)
     httpResponse.WriteResponseOk(headers	= None,
                                   contentType	= "text/html",contentCharset = "UTF-8",
                                   content 		 = content)
