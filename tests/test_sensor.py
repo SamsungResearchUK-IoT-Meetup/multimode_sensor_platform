@@ -1,4 +1,4 @@
-import machine
+import machine, pyb
 i2c = machine.I2C('X')
 machine.Pin.board.EN_3V3.value(1)
 print("Scanning I2C Bus: {}".format(i2c.scan()))
@@ -28,7 +28,17 @@ class HDC2080:
 hdc = HDC2080(i2c)
 
 while True:
-    hdc.measure()
-    while not hdc.is_ready():
-        machine.idle()
-    print(hdc.temperature(), hdc.humidity())
+    try:
+        hdc.measure()
+        while not hdc.is_ready():
+            machine.idle()
+        print(hdc.temperature(), hdc.humidity())
+        pyb.delay(100)
+    except OSError as error:
+        print("The I2C bus is not responding to the I2C device address of: {}".format(self.i2c_addr))
+        print("Error value: {}".format(error))
+    except:
+        # TODO put logging into this
+        print("An unexpected error occurred while attempting to read a temperature value")
+        raise
+
