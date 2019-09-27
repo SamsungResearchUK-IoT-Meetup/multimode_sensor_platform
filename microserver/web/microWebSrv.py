@@ -8,6 +8,7 @@ from    json        import loads, dumps
 from    os          import stat, uname
 from    _thread     import start_new_thread
 import  socket
+import  ssl
 import  gc
 import  re
 
@@ -194,7 +195,8 @@ class MicroWebSrv :
                   routeHandlers = [],
                   port          = 8000,
                   bindIP        = '0.0.0.0',
-                  webPath       = "/flash/www" ) :
+                  webPath       = "/flash/www",
+                  sslOptions    = None) :
 
         self._srvAddr       = (bindIP, port)
         self._webPath       = webPath
@@ -205,6 +207,11 @@ class MicroWebSrv :
         self.WebSocketThreaded          = True
         self.AcceptWebSocketCallback    = None
         self.LetCacheStaticContentLevel = 2
+
+        if sslOptions is not None:
+            self._wrapSocket = lambda s: ssl.wrap_socket(s, server_side=True, **sslOptions)
+        else:
+            self._wrapSocket = lambda s: s
 
         self._routeHandlers = []
         routeHandlers += self._docoratedRouteHandlers
@@ -237,6 +244,8 @@ class MicroWebSrv :
         while True :
             try :
                 client, cliAddr = self._server.accept()         # Blocking on socket.accept()
+                client.settimeout(4)
+                client = self._wrapSocket(client)
                 log.info("Accepted 'client': %s and 'client address': %s", client, cliAddr)
             except Exception as ex :
                 if ex.args and ex.args[0] == 113 :
@@ -379,7 +388,6 @@ class MicroWebSrv :
         # ------------------------------------------------------------------------
 
         def __init__(self, microWebSrv, socket, addr):
-            socket.settimeout(4)
             self._microWebSrv   = microWebSrv
             self._socket        = socket
             self._addr          = addr
