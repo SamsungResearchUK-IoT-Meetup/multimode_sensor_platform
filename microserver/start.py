@@ -46,7 +46,6 @@ def create_web_server():
 
 # ----------------------------------------------------------------------------
 
-
 # ============================================================================
 # ===( Create WiFi Manager =)=================================================
 # ============================================================================
@@ -54,11 +53,9 @@ def create_web_server():
 myWifi = Wifi_manager()                                 # Create our WiFi manager object
 myWifi.retries(5)                                       # Try connect 5 times since WiFi is so poor
 
-
 # ============================================================================
 # ===( Define URL Path for Status)============================================
 # ============================================================================
-
 
 
 @MicroWebSrv.route('/status')
@@ -93,12 +90,11 @@ def _httpHandlerStatustGet(httpClient, httpResponse):
                                   contentType	="text/html", contentCharset="UTF-8",
                                   content 		 =content)
 
-
 # ============================================================================
 # ===( Create A WiFi Connection and Start Web Server )========================
 # ============================================================================
 
-status = myWifi.connect('WiFi-SSID', 'WiFi-Password')                  # TODO pull the password and SSID from an encrypted file on FLASH
+status = myWifi.connect('Samsung-test', 'test1234')		       # TODO pull the password and SSID from an encrypted file on FLASH
 
 if status[0]:
     print('We have a WiFi connection. Bringing up web server')

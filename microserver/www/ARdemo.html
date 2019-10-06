@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--<script src="aframe/aframe.min2.js"></script>-->
+<!--<script src="aframe/aframe-ar.js"></script>-->
+
+<script src="https://raw.githack.com/SamsungResearchUK-IoT-Meetup/multimode_sensor_platform/ISSU15-no-augmented-reality-page/assets/AR/aframe.min2.js"></script>
+<script src="https://raw.githack.com/SamsungResearchUK-IoT-Meetup/multimode_sensor_platform/ISSU15-no-augmented-reality-page/assets/AR/aframe-ar.js"></script>
+
+<a-scene embedded arjs = 'trackingMethod: best;'>
+    <a-anchor hit-testing-enabled="true">
+        <a-torus position="0 0.5 0" color="green" radius="0.5">
+            <a-animation attribute="color"
+                         dur = "10000"
+                         from = "green"
+                         to = "red"
+                         repeat = "indefinite">
+            </a-animation>
+        </a-torus>
+        <a-plane src="https://raw.githubusercontent.com/aframevr/sample-assets/master/assets/images/illustration/758px-Canestra_di_frutta_(Caravaggio).jpg"
+                 width="3.5"
+                 height="3.5"
+                 rotation="-55 0 0 "
+                 position="0 -1 0"
+                 color="purple">
+        </a-plane>
+        <a-cylinder color="yellow" height="2" radius="0.05" position="0 0 0 "></a-cylinder>
+        <a-cylinder color="blue" height="2" radius="0.05" position="1 0 0"></a-cylinder>
+        <a-torus-knot color="orange" radius="0.5" position="1 0.5 0">
+            <a-animation attribute="rotation"
+                         dur = "10000"
+                         fill = "forward"
+                         to = "0 0 360"
+                         repeat = "indefinite">
+
+            </a-animation>
+        </a-torus-knot>
+
+        <a-plane src="https://raw.githubusercontent.com/aframevr/sample-assets/master/assets/images/uvgrid/UV_Grid_Sm.jpg"
+                 width="2.5"
+                 height="1.5"
+                 position="0 1 -1">
+
+        </a-plane>
+        <a-text value="Welcome To The Fun House" color="black" width="3" position="-1 0.5 -1"></a-text>
+    </a-anchor>
+    <a-camera-static/>
+
+</a-scene>
+</html>
+

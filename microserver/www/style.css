@@ -31,3 +31,11 @@ a:hover {
 a:active, a:focus {
  color: red;
 }
+
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 15%;
+}
+

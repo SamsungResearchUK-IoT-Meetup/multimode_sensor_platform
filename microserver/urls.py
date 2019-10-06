@@ -60,7 +60,7 @@ lightLevel = OPT_Sensor(i2c)                       # Create our lux level sensor
 def _httpHandlerTestGet(httpClient, httpResponse):
     content = """\
 	<!DOCTYPE html>
-	<html lang=en>
+	<html lang=en
         <head>
         	<meta charset="UTF-8" />
             <title>TEST GET</title>
@@ -126,6 +126,98 @@ def _httpHandlerTestGet(httpClient, httpResponse):
     httpResponse.WriteResponseOk(headers	= None,
                                   contentType	= "text/html",contentCharset = "UTF-8",
                                   content 		 = content)
+
+
+
+
+
+@MicroWebSrv.route('/AR')
+def _httpHandlerTestGet(httpClient, httpResponse):
+
+    temperature = humidityTemperature.temperature()
+    valueTemperature = ' "Temperature value: {}" '.format(temperature)
+    print("** The Temperature value is: {} ** ".format(valueTemperature))
+
+    humidity = humidityTemperature.humidity()
+    valueHumidity = ' "Humidity value: {}" '.format(humidity)
+    print("** The Humidity value is: {} ** ".format(valueHumidity))
+
+    lux = lightLevel.lux()
+    valueLux = ' "LUX value: {}" '.format(lux)
+    print("** The LUX value is: {} ** ".format(valueLux))
+
+    current_time = time.localtime()[:-2]
+    valueTime = ' "Time: {}" '.format(current_time)
+    print("** The time value is: {} ** ".format(valueTime))
+
+    content = """\
+	<!DOCTYPE html>
+<html lang="en">
+
+<script src="https://raw.githack.com/SamsungResearchUK-IoT-Meetup/multimode_sensor_platform/ISSU15-no-augmented-reality-page/assets/AR/aframe.min2.js"></script>
+<script src="https://raw.githack.com/SamsungResearchUK-IoT-Meetup/multimode_sensor_platform/ISSU15-no-augmented-reality-page/assets/AR/aframe-ar.js"></script>
+
+    <a-scene embedded arjs = 'trackingMethod: best;'>
+        <a-anchor hit-testing-enabled="true">
+            <a-plane src="samsung.png"
+                     opacity=""0.5"
+                     width="5"
+                     height="5"
+                      rotation="-90 0 0 "
+                     position="0 -5 -5"
+                     color="white">
+
+            </a-plane>
+
+            <a-plane src=""
+                     opacity="0.4"
+                     color="white"
+                     width="5"
+                     height="4"
+                     position="0 -4 -6.5">
+            <a-text color="#222222" align="left" baseline="top" width="8" position="-2 1.8 0.1" font="aileronsemibold"
+                    value="Samsung Multimode Sensor"
+                    text="">
+            </a-text>
+            <a-text color="#222222" align="left" baseline="top" width="6" position="-2 1.4 0.1" font="aileronsemibold"
+                    value= %s
+                    text="">
+            </a-text>
+            <a-text color="#222222" align="left" baseline="top" width="6" position="-2 1.1 0.1" font="aileronsemibold"
+                    value= %s
+                    text="">
+            </a-text>
+            <a-text color="#222222" align="left" baseline="top" width="6" position="-2 0.8 0.1" font="aileronsemibold"
+                    value= %s
+                    text="">
+            </a-text>
+            <a-text color="#222222" align="left" baseline="top" width="6" position="-2 0.5 0.1" font="aileronsemibold"
+                    value="PIR detection events: N/A"
+                    text="">
+            </a-text>
+            <a-text color="#222222" align="left" baseline="top" width="6" position="-2 0.2 0.1" font="aileronsemibold"
+                    value="Radar detection events: N/A"
+                    text="">
+            </a-text>
+            <a-text color="#222222" align="left" baseline="top" width="6" position="-2 -0.1 0.1" font="aileronsemibold"
+                    value= %s
+                    text="">
+            </a-text>
+            </a-plane>
+        </a-anchor>
+        <a-camera-static/>
+    </a-scene>
+</html>
+	""" % (valueTime, valueTemperature, valueHumidity, valueLux)
+    httpResponse.WriteResponseOk(headers	= None,
+                                  contentType	= "text/html",contentCharset = "UTF-8",
+                                  content 		 = content)
+
+
+
+
+
+
 
 
 
