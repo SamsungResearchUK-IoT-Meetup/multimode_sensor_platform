@@ -85,7 +85,7 @@ def _httpHandlerTestGet(httpClient, httpResponse):
 
 
 @MicroWebSrv.route('/sensors')
-def _httpHandlerTestGet(httpClient, httpResponse):
+def _httpHandlerSensorsGet(httpClient, httpResponse):
 
     temperature = humidityTemperature.temperature()
     humidity =  humidityTemperature.humidity()
@@ -132,7 +132,7 @@ def _httpHandlerTestGet(httpClient, httpResponse):
 
 
 @MicroWebSrv.route('/AR')
-def _httpHandlerTestGet(httpClient, httpResponse):
+def _httpHandlerARGet(httpClient, httpResponse):
 
     temperature = humidityTemperature.temperature()
     valueTemperature = ' "Temperature value: {}" '.format(temperature)
