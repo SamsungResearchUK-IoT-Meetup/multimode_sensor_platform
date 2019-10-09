@@ -114,7 +114,7 @@ def _httpHandlerSensorsGet(httpClient, httpResponse):
             <br />
             Temperature Sensor: %s
             <br />
-            LUX Light Level: %s
+            Light (LUX) Level: %s
             <br />
             Humidity Level: %s
             <br />
