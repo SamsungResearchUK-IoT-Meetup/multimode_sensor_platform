@@ -3,7 +3,7 @@ The WiFi Manager is fully documented in the project WiKi.
 You can read the WiFi page Wiki [here](https://github.com/SamsungResearchUK-IoT-Meetup/multimode_sensor_platform/wiki)
 
 This document is here just to allow developers to quickly test this module in isolation. It forms a wrapper around the micropython
-[network](http://docs.micropython.org/en/latest/library/network.html), [micropython schedule](http://docs.micropython.org/en/latest/library/micropython.html) and [pyb](http://docs.micropython.org/en/latest/library/pyb.html) library. It's used to monitor a WiFi connection and attempt to reconnect, if WiFi fails.
+[network](http://docs.micropython.org/en/latest/library/network.html), [micropython schedule](http://docs.micropython.org/en/latest/library/micropython.html) and [pyb](http://docs.micropython.org/en/latest/library/pyb.html) library. It's used to monitor a WiFi connection and attempt to reconnect if WiFi fails.
 It will also retry when it initially connects to a new WiFi connection a default of 3 times - which is configurable. The WiFi manager also has a number of state variables and attributes mentioned later.
 
 ## PYB Library
